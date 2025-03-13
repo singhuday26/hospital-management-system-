@@ -6,9 +6,17 @@ interface BlurCardProps {
   children: ReactNode;
   className?: string;
   hoverEffect?: boolean;
+  onMouseEnter?: () => void;
+  onMouseLeave?: () => void;
 }
 
-export default function BlurCard({ children, className, hoverEffect = true }: BlurCardProps) {
+export default function BlurCard({ 
+  children, 
+  className, 
+  hoverEffect = true,
+  onMouseEnter,
+  onMouseLeave
+}: BlurCardProps) {
   return (
     <div 
       className={cn(
@@ -16,6 +24,8 @@ export default function BlurCard({ children, className, hoverEffect = true }: Bl
         hoverEffect && "hover:shadow-medium hover:translate-y-[-4px]",
         className
       )}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
     >
       <div className="relative z-10">
         {children}
