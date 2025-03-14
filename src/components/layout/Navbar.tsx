@@ -5,6 +5,7 @@ import { Menu, X, Bell, Search, LogOut, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { ThemeToggle } from '@/components/ui/theme-toggle';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,11 +14,20 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
 
 export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [session, setSession] = useState<any>(null);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
   const location = useLocation();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -62,6 +72,22 @@ export default function Navbar() {
     navigate('/login');
   };
 
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      // This would typically use the query to filter data
+      // For now, we'll just close the dialog and show a toast
+      setSearchOpen(false);
+      toast({
+        title: "Search initiated",
+        description: `Searching for: ${searchQuery}`,
+      });
+      
+      // In a real implementation, we would navigate to a search results page
+      // navigate(`/search?q=${encodeURIComponent(searchQuery)}`);
+    }
+  };
+
   return (
     <nav 
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
@@ -89,7 +115,7 @@ export default function Navbar() {
                 className={`transition-all duration-200 px-1 py-2 text-sm font-medium ${
                   location.pathname === item.href
                     ? 'text-primary border-b-2 border-primary'
-                    : 'text-gray-500 hover:text-primary'
+                    : 'text-gray-500 hover:text-primary dark:text-gray-300 dark:hover:text-primary'
                 }`}
               >
                 {item.name}
@@ -100,12 +126,17 @@ export default function Navbar() {
           <div className="hidden md:flex items-center space-x-4">
             {session ? (
               <>
-                <Button variant="ghost" size="icon">
+                <Button 
+                  variant="ghost" 
+                  size="icon"
+                  onClick={() => setSearchOpen(true)}
+                >
                   <Search className="h-5 w-5" />
                 </Button>
                 <Button variant="ghost" size="icon">
                   <Bell className="h-5 w-5" />
                 </Button>
+                <ThemeToggle />
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" size="icon" className="rounded-full">
@@ -128,13 +159,17 @@ export default function Navbar() {
                 </DropdownMenu>
               </>
             ) : (
-              <Button variant="default" size="sm" onClick={() => navigate('/login')}>
-                Sign In
-              </Button>
+              <>
+                <ThemeToggle />
+                <Button variant="default" size="sm" onClick={() => navigate('/login')}>
+                  Sign In
+                </Button>
+              </>
             )}
           </div>
           
           <div className="flex items-center md:hidden">
+            <ThemeToggle />
             <Button 
               variant="ghost" 
               size="icon"
@@ -156,6 +191,19 @@ export default function Navbar() {
           <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
             {session ? (
               <>
+                <div className="p-2 mb-3">
+                  <Button 
+                    variant="outline" 
+                    className="w-full flex items-center justify-start"
+                    onClick={() => {
+                      setSearchOpen(true);
+                      setIsMobileMenuOpen(false);
+                    }}
+                  >
+                    <Search className="h-4 w-4 mr-2" />
+                    <span>Search</span>
+                  </Button>
+                </div>
                 {navigation.map((item) => (
                   <Link
                     key={item.name}
@@ -198,6 +246,28 @@ export default function Navbar() {
           </div>
         </div>
       )}
+
+      {/* Search Dialog */}
+      <Dialog open={searchOpen} onOpenChange={setSearchOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Search</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleSearch} className="space-y-4 mt-4">
+            <Input
+              type="text"
+              placeholder="Search for patients, doctors, appointments..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full"
+              autoFocus
+            />
+            <div className="flex justify-end">
+              <Button type="submit">Search</Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
     </nav>
   );
 }
