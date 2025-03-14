@@ -9,21 +9,46 @@ import {
 } from '@/components/ui/dropdown-menu';
 import BlurCard from '../ui/BlurCard';
 import { cn } from '@/lib/utils';
-import { Appointment } from '@/lib/types';
+import { Appointment } from '@/lib/api-types';
 import { useToast } from '@/hooks/use-toast';
+import { updateAppointmentStatus } from '@/lib/supabase-service';
 
 interface AppointmentCardProps {
   appointment: Appointment;
+  onStatusChange?: () => void;
 }
 
-export default function AppointmentCard({ appointment }: AppointmentCardProps) {
+export default function AppointmentCard({ appointment, onStatusChange }: AppointmentCardProps) {
   const { toast } = useToast();
   
-  const handleStatusChange = (status: 'confirmed' | 'cancelled' | 'completed') => {
-    toast({
-      title: `Appointment ${status}`,
-      description: `The appointment has been ${status}`,
-    });
+  const handleStatusChange = async (status: 'confirmed' | 'cancelled' | 'completed') => {
+    try {
+      const { error } = await updateAppointmentStatus(appointment.id, status);
+      
+      if (error) {
+        toast({
+          title: "Error",
+          description: error,
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      toast({
+        title: `Appointment ${status}`,
+        description: `The appointment has been ${status}`,
+      });
+      
+      if (onStatusChange) {
+        onStatusChange();
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred",
+        variant: "destructive",
+      });
+    }
   };
 
   const statusStyles = {

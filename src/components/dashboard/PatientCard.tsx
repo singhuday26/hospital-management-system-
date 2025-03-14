@@ -9,7 +9,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import BlurCard from '../ui/BlurCard';
-import { Patient } from '@/lib/types';
+import { Patient } from '@/lib/api-types';
 import { useToast } from '@/hooks/use-toast';
 
 interface PatientCardProps {
@@ -57,7 +57,7 @@ export default function PatientCard({ patient, compact = false }: PatientCardPro
           </div>
           <div>
             <h3 className="font-medium text-sm">{patient.name}</h3>
-            <p className="text-xs text-muted-foreground">{patient.patientId}</p>
+            <p className="text-xs text-muted-foreground">{patient.id.substring(0, 8)}</p>
           </div>
         </div>
         
@@ -87,16 +87,16 @@ export default function PatientCard({ patient, compact = false }: PatientCardPro
             <div className="flex items-center gap-2 text-sm">
               <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
               <span className="text-muted-foreground text-xs">
-                Last visit: {new Date(patient.lastVisit).toLocaleDateString()}
+                Last visit: {patient.lastVisit ? new Date(patient.lastVisit).toLocaleDateString() : 'N/A'}
               </span>
             </div>
             <div className="flex items-center gap-2 text-sm">
               <Phone className="h-3.5 w-3.5 text-muted-foreground" />
-              <span className="text-muted-foreground text-xs">{patient.phone}</span>
+              <span className="text-muted-foreground text-xs">{patient.phone || 'N/A'}</span>
             </div>
             <div className="flex items-center gap-2 text-sm">
               <Mail className="h-3.5 w-3.5 text-muted-foreground" />
-              <span className="text-muted-foreground text-xs">{patient.email}</span>
+              <span className="text-muted-foreground text-xs">{patient.email || 'N/A'}</span>
             </div>
           </div>
           
