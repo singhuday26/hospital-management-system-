@@ -65,7 +65,9 @@ export function usePerformance(): PerformanceMetrics {
       const fidObserver = new PerformanceObserver((entries) => {
         const firstInput = entries.getEntries()[0];
         if (firstInput) {
-          const fid = firstInput.processingStart - (firstInput as any).startTime;
+          // Use type assertion to access processingStart property on PerformanceEventTiming
+          const eventTiming = firstInput as PerformanceEventTiming;
+          const fid = eventTiming.processingStart - eventTiming.startTime;
           setMetrics(prev => ({ ...prev, firstInputDelay: fid }));
         }
       });
