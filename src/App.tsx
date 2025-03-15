@@ -3,10 +3,15 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { useEffect, lazy, Suspense } from "react";
 import ErrorBoundary from "@/components/utils/ErrorBoundary";
 import LazyLoad from "@/components/utils/LazyLoad";
+
+// Monitoring integrations
+import { initSentry } from "@/lib/sentry";
+import { initAnalytics, trackPageView } from "@/lib/analytics";
+import { initWebVitals } from "@/lib/web-vitals";
 
 // Auth Guard
 import AuthGuard from "./components/auth/AuthGuard";
@@ -24,6 +29,13 @@ const Billing = lazy(() => import("./pages/Billing"));
 const Inventory = lazy(() => import("./pages/Inventory"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
+// Initialize monitoring in production
+if (import.meta.env.PROD) {
+  initSentry();
+  initAnalytics();
+  initWebVitals();
+}
+
 // Configure React Query
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -35,6 +47,18 @@ const queryClient = new QueryClient({
     },
   },
 });
+
+// PageViewTracker component to track route changes
+const PageViewTracker = () => {
+  const location = useLocation();
+  
+  useEffect(() => {
+    // Track page view on route change
+    trackPageView(location.pathname + location.search);
+  }, [location]);
+  
+  return null;
+};
 
 const App = () => {
   // Set up the theme on initial load
@@ -60,6 +84,7 @@ const App = () => {
           <Toaster />
           <Sonner />
           <BrowserRouter>
+            <PageViewTracker />
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/login" element={
