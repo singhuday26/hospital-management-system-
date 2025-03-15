@@ -12,8 +12,8 @@ export default defineConfig(({ mode }) => ({
   },
   plugins: [
     react({
-      // Enable fast refresh in development
-      fastRefresh: mode === 'development',
+      // React-swc no longer has fastRefresh property
+      // It's enabled by default in development
     }),
     // Split vendor chunks for better caching
     splitVendorChunkPlugin(),
