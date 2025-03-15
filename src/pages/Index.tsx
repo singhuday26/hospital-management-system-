@@ -1,3 +1,4 @@
+
 import { Helmet } from 'react-helmet';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
@@ -9,7 +10,7 @@ import CtaSection from '@/components/landing/CtaSection';
 
 export default function Index() {
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-background">
       <Helmet>
         <title>MediCare - Hospital Management System</title>
         <meta name="description" content="A comprehensive hospital management system for streamlining patient care, appointments, billing, and administrative tasks." />
@@ -23,12 +24,14 @@ export default function Index() {
       
       <Navbar />
       
-      {/* Main content sections */}
-      <HeroSection />
-      <FeaturesSection />
-      <BenefitsSection />
-      <TestimonialsSection />
-      <CtaSection />
+      {/* Main content sections with improved stability */}
+      <main className="flex-grow">
+        <HeroSection />
+        <FeaturesSection />
+        <BenefitsSection />
+        <TestimonialsSection />
+        <CtaSection />
+      </main>
       
       <Footer />
     </div>

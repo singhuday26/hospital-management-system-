@@ -8,18 +8,24 @@ import SlideUp from '@/components/animations/SlideUp';
 
 export default function HeroSection() {
   return (
-    <section className="relative pt-16 pb-32 overflow-hidden">
+    <section className="relative py-24 overflow-hidden bg-gradient-to-b from-primary/5 to-transparent">
       <div className="absolute inset-0 z-0 bg-gradient-to-br from-primary/5 to-primary/10 dark:from-primary/10 dark:to-primary/5" />
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 pt-20 lg:pt-28">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        {/* Logo and Project Name Banner */}
+        <div className="text-center mb-12">
+          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-primary tracking-tight animate-fade-in mb-2">
+            MediCare
+          </h1>
+          <div className="bg-primary/10 h-1 w-40 mx-auto rounded-full mb-4"></div>
+          <p className="text-lg text-muted-foreground">Advanced Hospital Management System</p>
+        </div>
+        
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           <FadeIn delay={100}>
             <div className="space-y-6">
-              <div className="inline-block px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium mb-2">
-                Hospital Management System
-              </div>
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold leading-tight tracking-tight text-gray-900 dark:text-white">
+              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold leading-tight tracking-tight text-gray-900 dark:text-white">
                 Transform Your Healthcare Management
-              </h1>
+              </h2>
               <p className="text-xl text-muted-foreground">
                 A comprehensive solution to efficiently manage patients, appointments, medical records, and administrative tasks in one secure platform.
               </p>
@@ -34,11 +40,12 @@ export default function HeroSection() {
             </div>
           </FadeIn>
           
-          <div className="relative order-first lg:order-last">
+          <div className="relative lg:order-last">
             <div className="aspect-video lg:aspect-square relative">
               <SlideUp delay={300} staggerChildren staggerDelay={150}>
+                {/* Dashboard Cards */}
                 <div className="absolute w-[300px] h-[180px] top-0 right-0 lg:right-16 lg:top-16 animate-float z-20">
-                  <Card className="w-full h-full shadow-lg glass overflow-hidden">
+                  <Card className="w-full h-full shadow-lg glass overflow-hidden border-2 border-gray-100 dark:border-gray-800">
                     <div className="p-3">
                       <div className="flex justify-between items-center mb-4">
                         <div className="flex items-center gap-2">
@@ -65,7 +72,7 @@ export default function HeroSection() {
                 </div>
                 
                 <div className="absolute w-[280px] h-[140px] top-1/2 -translate-y-1/2 left-0 lg:left-0 lg:top-1/4 animate-float animation-delay-1000 z-10">
-                  <Card className="w-full h-full shadow-lg glass overflow-hidden">
+                  <Card className="w-full h-full shadow-lg glass overflow-hidden border-2 border-gray-100 dark:border-gray-800">
                     <div className="p-3">
                       <div className="flex justify-between items-center mb-3">
                         <div className="flex items-center gap-2">
@@ -86,26 +93,26 @@ export default function HeroSection() {
                 </div>
                 
                 <div className="absolute w-[240px] h-[180px] bottom-0 left-1/4 lg:left-1/3 lg:bottom-16 animate-float animation-delay-500 z-30">
-                  <Card className="w-full h-full shadow-lg glass overflow-hidden">
+                  <Card className="w-full h-full shadow-lg glass overflow-hidden border-2 border-gray-100 dark:border-gray-800">
                     <div className="p-3">
                       <div className="flex justify-between items-center mb-3">
                         <h3 className="font-medium text-sm">Doctor Availability</h3>
                       </div>
                       <div className="space-y-2">
                         <div className="flex items-center justify-between">
-                          <span className="text-xs">Dr. Johnson</span>
+                          <span className="text-xs">Dr. Arjun Reddy</span>
                           <span className="text-xs text-green-500">Available</span>
                         </div>
                         <div className="flex items-center justify-between">
-                          <span className="text-xs">Dr. Miller</span>
+                          <span className="text-xs">Dr. Meera Agarwal</span>
                           <span className="text-xs text-green-500">Available</span>
                         </div>
                         <div className="flex items-center justify-between">
-                          <span className="text-xs">Dr. Chen</span>
+                          <span className="text-xs">Dr. Kavita Desai</span>
                           <span className="text-xs text-red-500">Unavailable</span>
                         </div>
                         <div className="flex items-center justify-between">
-                          <span className="text-xs">Dr. Wilson</span>
+                          <span className="text-xs">Dr. Rajan Verma</span>
                           <span className="text-xs text-green-500">Available</span>
                         </div>
                       </div>
