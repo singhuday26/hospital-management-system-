@@ -1,69 +1,105 @@
-# Welcome to your Lovable project
 
-## Project info
+# MediCare - Hospital Management System
 
-**URL**: https://lovable.dev/projects/e3c7e059-79aa-47af-bf7d-e90c4ee3ef57
+A comprehensive healthcare management system built with React, TypeScript, Tailwind CSS, and Supabase.
 
-## How can I edit this code?
+## Features
 
-There are several ways of editing your application.
+- **Patient Management**: Track patient information, medical history, and visits
+- **Appointment Scheduling**: Manage doctor appointments and scheduling
+- **Doctor Directory**: Comprehensive doctor profiles and availability
+- **Dashboard Analytics**: Visual reports on hospital performance metrics
+- **Role-based Access Control**: Different permissions for staff and administrators
 
-**Use Lovable**
+## Technology Stack
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/e3c7e059-79aa-47af-bf7d-e90c4ee3ef57) and start prompting.
+- **Frontend**: React 18 with TypeScript
+- **Styling**: Tailwind CSS with shadcn/ui components
+- **State Management**: React Query for data fetching
+- **Routing**: React Router DOM
+- **Database**: Supabase (PostgreSQL)
+- **Deployment**: Vercel
 
-Changes made via Lovable will be committed automatically to this repo.
+## Setup Instructions
 
-**Use your preferred IDE**
+### Prerequisites
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+- Node.js 16.x or higher
+- npm 8.x or higher
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+### Local Development
 
-Follow these steps:
+1. Clone the repository
+   ```bash
+   git clone <repository-url>
+   cd medicare
+   ```
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+2. Install dependencies
+   ```bash
+   npm install
+   ```
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+3. Set up environment variables
+   Create a `.env` file in the root directory with the following variables:
+   ```
+   VITE_SUPABASE_URL=your_supabase_url
+   VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+   ```
 
-# Step 3: Install the necessary dependencies.
-npm i
+4. Run the development server
+   ```bash
+   npm run dev
+   ```
+   The application will be available at `http://localhost:8080`
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
+### Building for Production
 
-**Edit a file directly in GitHub**
+1. Generate a production build
+   ```bash
+   npm run build
+   ```
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+2. Preview the production build locally
+   ```bash
+   npm run preview
+   ```
 
-**Use GitHub Codespaces**
+### Deployment on Vercel
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+1. Push your code to a GitHub repository
 
-## What technologies are used for this project?
+2. Connect your repository to Vercel
 
-This project is built with .
+3. Configure the environment variables in the Vercel dashboard:
+   - `VITE_SUPABASE_URL`
+   - `VITE_SUPABASE_ANON_KEY`
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+4. Deploy!
 
-## How can I deploy this project?
+## Performance Optimizations
 
-Simply open [Lovable](https://lovable.dev/projects/e3c7e059-79aa-47af-bf7d-e90c4ee3ef57) and click on Share -> Publish.
+- Code splitting with React.lazy and Suspense
+- Memoization of components with React.memo
+- Image optimization
+- Bundle size optimization
 
-## I want to use a custom domain - is that possible?
+## Browser Compatibility
 
-We don't support custom domains (yet). If you want to deploy your project under your own domain then we recommend using Netlify. Visit our docs for more details: [Custom domains](https://docs.lovable.dev/tips-tricks/custom-domain/)
+Tested and optimized for:
+- Chrome (latest)
+- Firefox (latest)
+- Safari (latest)
+- Edge (latest)
+
+## Accessibility
+
+The application is designed to meet WCAG AA accessibility standards, including:
+- Proper semantic HTML
+- ARIA attributes where needed
+- Keyboard navigation
+- Color contrast requirements
+
+## License
+
+[MIT](LICENSE)
