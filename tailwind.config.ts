@@ -101,13 +101,7 @@ export default {
 		}
 	},
 	plugins: [
-		require("tailwindcss-animate"),
-		// Add PurgeCSS for production builds
-		process.env.NODE_ENV === 'production' 
-			? require('@fullhuman/postcss-purgecss')({
-				content: ['./src/**/*.{js,jsx,ts,tsx}', './index.html'],
-				defaultExtractor: content => content.match(/[\w-/:]+(?<!:)/g) || []
-			})
-			: null
-	].filter(Boolean),
+		require("tailwindcss-animate")
+		// Remove PurgeCSS plugin that's causing the build error
+	],
 } satisfies Config;

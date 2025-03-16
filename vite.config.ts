@@ -1,5 +1,5 @@
 
-import { defineConfig, splitVendorChunkPlugin } from "vite";
+import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
 
@@ -14,8 +14,7 @@ export default defineConfig(({ mode }) => ({
       // React-swc no longer has fastRefresh property
       // It's enabled by default in development
     }),
-    // Split vendor chunks for better caching
-    splitVendorChunkPlugin(),
+    // Remove splitVendorChunkPlugin that's causing conflict with manualChunks
     // Only use component tagger in development
     mode === 'development' &&
     // Using dynamic import to avoid build issues in production
@@ -44,15 +43,27 @@ export default defineConfig(({ mode }) => ({
     cssMinify: true,
     // Source maps only in development
     sourcemap: mode !== 'production',
-    // Chunk strategy
+    // Chunk strategy - Convert to function form to avoid conflict with splitVendorChunk
     rollupOptions: {
       output: {
-        manualChunks: {
-          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
-          'ui-vendor': ['@radix-ui/react-avatar', '@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu'],
-          'chart-vendor': ['recharts'],
-          'form-vendor': ['react-hook-form', '@hookform/resolvers', 'zod'],
-        },
+        manualChunks: (id) => {
+          if (id.includes('node_modules')) {
+            if (id.includes('react/') || id.includes('react-dom') || id.includes('react-router-dom')) {
+              return 'react-vendor';
+            }
+            if (id.includes('@radix-ui/react-')) {
+              return 'ui-vendor';
+            }
+            if (id.includes('recharts')) {
+              return 'chart-vendor';
+            }
+            if (id.includes('react-hook-form') || id.includes('@hookform/resolvers') || id.includes('zod')) {
+              return 'form-vendor';
+            }
+            // Default vendor chunk for everything else
+            return 'vendor';
+          }
+        }
       },
     },
     // Reduce chunk size warnings
