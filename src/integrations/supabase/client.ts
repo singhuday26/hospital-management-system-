@@ -16,3 +16,19 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABL
 if (import.meta.env.DEV) {
   console.log('Supabase connection initialized');
 }
+
+// Provide a way to test the connection
+export const testSupabaseConnection = async () => {
+  try {
+    const { data, error } = await supabase.from('profiles').select('count');
+    if (error) {
+      console.error('Supabase connection test failed:', error);
+      return false;
+    }
+    console.log('Supabase connection test successful');
+    return true;
+  } catch (error) {
+    console.error('Supabase connection test exception:', error);
+    return false;
+  }
+};
