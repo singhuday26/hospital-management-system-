@@ -12,7 +12,20 @@ const renderApp = () => {
       return;
     }
     
+    // Clear the loading indicator
+    rootElement.innerHTML = '';
+    
     const root = createRoot(rootElement);
+    
+    // Use requestIdleCallback for non-critical initialization
+    if ('requestIdleCallback' in window) {
+      requestIdleCallback(() => {
+        // Initialize non-critical app features
+        // This can include analytics, monitoring, etc.
+        console.log("Non-critical features initialized");
+      });
+    }
+    
     root.render(<App />);
     console.log("App rendered successfully");
   } catch (error) {
@@ -32,4 +45,8 @@ const renderApp = () => {
 };
 
 // Execute app rendering
-renderApp();
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', renderApp);
+} else {
+  renderApp();
+}

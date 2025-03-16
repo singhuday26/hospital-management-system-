@@ -36,39 +36,47 @@ export default defineConfig(({ mode }) => ({
     },
   },
   build: {
-    // Enable minification and tree-shaking
-    minify: 'terser',
+    // Enable minification with terser
+    minify: true,
     target: 'es2015',
     cssMinify: true,
+    
     // Source maps only in development
     sourcemap: mode !== 'production',
-    // Chunk strategy - Using function form as recommended
+    
+    // Chunk splitting optimization
     rollupOptions: {
       output: {
-        manualChunks: (id) => {
-          if (id.includes('node_modules')) {
-            if (id.includes('react/') || id.includes('react-dom') || id.includes('react-router-dom')) {
-              return 'react-vendor';
-            }
-            if (id.includes('@radix-ui/react-')) {
-              return 'ui-vendor';
-            }
-            if (id.includes('recharts')) {
-              return 'chart-vendor';
-            }
-            if (id.includes('react-hook-form') || id.includes('@hookform/resolvers') || id.includes('zod')) {
-              return 'form-vendor';
-            }
-            // Default vendor chunk for everything else
-            return 'vendor';
-          }
-        }
+        manualChunks: {
+          // Core framework libraries
+          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
+          
+          // UI libraries
+          'ui-vendor': ['@radix-ui/react-dialog', '@radix-ui/react-toast', '@radix-ui/react-avatar', '@radix-ui/react-tabs'],
+          
+          // Chart libraries
+          'chart-vendor': ['recharts'],
+          
+          // Form libraries
+          'form-vendor': ['react-hook-form', '@hookform/resolvers', 'zod'],
+          
+          // Icon libraries
+          'icons': ['lucide-react'],
+        },
+        
+        // Optimize code splitting
+        chunkFileNames: 'assets/js/[name]-[hash].js',
+        entryFileNames: 'assets/js/[name]-[hash].js',
+        assetFileNames: 'assets/[ext]/[name]-[hash].[ext]',
       },
     },
+    
     // Reduce chunk size warnings
     chunkSizeWarningLimit: 1000,
-    // Inline assets to reduce HTTP requests
-    assetsInlineLimit: 4096,
+    
+    // Optimize assets
+    assetsInlineLimit: 10 * 1024, // Inline files smaller than 10KB
+    
     // Important: prevent empty chunk files
     emptyOutDir: true,
   },
@@ -81,6 +89,7 @@ export default defineConfig(({ mode }) => ({
       '@radix-ui/react-avatar',
       'lucide-react',
       'recharts',
+      'react-helmet',
     ],
     exclude: [
       'lovable-tagger' // Exclude this from optimization to prevent build issues
