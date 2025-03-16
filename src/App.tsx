@@ -4,7 +4,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
-import { useEffect, lazy, Suspense } from "react";
+import { useEffect, lazy, Suspense, useState } from "react";
 import ErrorBoundary from "@/components/utils/ErrorBoundary";
 import LazyLoad from "@/components/utils/LazyLoad";
 
@@ -31,9 +31,13 @@ const NotFound = lazy(() => import("./pages/NotFound"));
 
 // Initialize monitoring in production
 if (import.meta.env.PROD) {
-  initSentry();
-  initAnalytics();
-  initWebVitals();
+  try {
+    initSentry();
+    initAnalytics();
+    initWebVitals();
+  } catch (error) {
+    console.error("Failed to initialize monitoring:", error);
+  }
 }
 
 // Configure React Query
@@ -61,21 +65,35 @@ const PageViewTracker = () => {
 };
 
 const App = () => {
+  const [isInitialized, setIsInitialized] = useState(false);
+
   // Set up the theme on initial load
   useEffect(() => {
-    const root = window.document.documentElement;
-    const initialTheme = localStorage.getItem('theme') || 'light';
-    
-    root.classList.remove('light', 'dark');
-    root.classList.add(initialTheme);
+    try {
+      const root = window.document.documentElement;
+      const initialTheme = localStorage.getItem('theme') || 'light';
+      
+      root.classList.remove('light', 'dark');
+      root.classList.add(initialTheme);
 
-    // Add smooth scrolling
-    document.documentElement.style.scrollBehavior = 'smooth';
-    
-    return () => {
-      document.documentElement.style.scrollBehavior = '';
-    };
+      // Add smooth scrolling
+      document.documentElement.style.scrollBehavior = 'smooth';
+      
+      // Mark as initialized
+      setIsInitialized(true);
+      
+      return () => {
+        document.documentElement.style.scrollBehavior = '';
+      };
+    } catch (error) {
+      console.error("Failed to initialize app:", error);
+      setIsInitialized(true); // Continue anyway
+    }
   }, []);
+
+  if (!isInitialized) {
+    return null; // Wait for initialization
+  }
 
   return (
     <ErrorBoundary>

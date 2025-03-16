@@ -102,6 +102,6 @@ export default {
 	},
 	plugins: [
 		require("tailwindcss-animate")
-		// Remove PurgeCSS plugin that's causing the build error
+		// Removed PurgeCSS plugin that was causing build errors
 	],
 } satisfies Config;

@@ -14,7 +14,6 @@ export default defineConfig(({ mode }) => ({
       // React-swc no longer has fastRefresh property
       // It's enabled by default in development
     }),
-    // Remove splitVendorChunkPlugin that's causing conflict with manualChunks
     // Only use component tagger in development
     mode === 'development' &&
     // Using dynamic import to avoid build issues in production
@@ -43,7 +42,7 @@ export default defineConfig(({ mode }) => ({
     cssMinify: true,
     // Source maps only in development
     sourcemap: mode !== 'production',
-    // Chunk strategy - Convert to function form to avoid conflict with splitVendorChunk
+    // Chunk strategy - Using function form as recommended
     rollupOptions: {
       output: {
         manualChunks: (id) => {
