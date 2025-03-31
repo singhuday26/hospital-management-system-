@@ -47,21 +47,26 @@ export default defineConfig(({ mode }) => ({
     // Chunk splitting optimization
     rollupOptions: {
       output: {
-        manualChunks: {
-          // Core framework libraries
-          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
-          
-          // UI libraries
-          'ui-vendor': ['@radix-ui/react-dialog', '@radix-ui/react-toast', '@radix-ui/react-avatar', '@radix-ui/react-tabs'],
-          
-          // Chart libraries
-          'chart-vendor': ['recharts'],
-          
-          // Form libraries
-          'form-vendor': ['react-hook-form', '@hookform/resolvers', 'zod'],
-          
-          // Icon libraries
-          'icons': ['lucide-react'],
+        manualChunks: (id) => {
+          // Improved chunking strategy for faster loading
+          if (id.includes('node_modules')) {
+            if (id.includes('react') || id.includes('react-dom') || id.includes('react-router')) {
+              return 'react-vendor';
+            }
+            if (id.includes('@radix-ui')) {
+              return 'ui-vendor';
+            }
+            if (id.includes('recharts')) {
+              return 'chart-vendor';
+            }
+            if (id.includes('react-hook-form') || id.includes('zod')) {
+              return 'form-vendor';
+            }
+            if (id.includes('lucide')) {
+              return 'icons';
+            }
+            return 'vendor';
+          }
         },
         
         // Optimize code splitting
@@ -72,7 +77,7 @@ export default defineConfig(({ mode }) => ({
     },
     
     // Reduce chunk size warnings
-    chunkSizeWarningLimit: 1000,
+    chunkSizeWarningLimit: 1200,
     
     // Optimize assets
     assetsInlineLimit: 10 * 1024, // Inline files smaller than 10KB
