@@ -109,6 +109,7 @@ export const subscribeToTable = (
   event: 'INSERT' | 'UPDATE' | 'DELETE' | '*' = '*',
   callback: (payload: any) => void
 ) => {
+  // Using the correct type for the channel event
   const channel = supabase
     .channel('table-db-changes')
     .on(

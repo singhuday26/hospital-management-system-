@@ -7,7 +7,7 @@ import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { useEffect, lazy, Suspense, useState } from "react";
 import ErrorBoundary from "@/components/utils/ErrorBoundary";
 import LazyLoad from "@/components/utils/LazyLoad";
-import { AuthContextProvider } from "@/components/auth/AuthContext";
+import { AuthProvider } from "@/hooks/use-auth";  // Changed from AuthContextProvider to AuthProvider
 
 // Monitoring integrations
 import { initSentry } from "@/lib/sentry";
@@ -99,7 +99,7 @@ const App = () => {
   return (
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>
-        <AuthContextProvider>
+        <AuthProvider>
           <TooltipProvider>
             <Toaster />
             <Sonner />
@@ -180,7 +180,7 @@ const App = () => {
               </Routes>
             </BrowserRouter>
           </TooltipProvider>
-        </AuthContextProvider>
+        </AuthProvider>
       </QueryClientProvider>
     </ErrorBoundary>
   );

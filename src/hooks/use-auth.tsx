@@ -89,7 +89,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setIsLoading(false);
       }
     };
-
+    
     initializeAuth();
 
     return () => {
@@ -104,20 +104,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         email,
         password,
       });
-
+      
       if (error) {
         throw error;
       }
-
+      
       return { success: true };
-    } catch (error) {
-      const authError = error as AuthError;
-      console.error('Sign in error:', authError);
+    } catch (error: any) {
+      console.error('Sign in error:', error);
       
       // Return friendly error message
       return {
         success: false,
-        error: authError.message || 'Failed to sign in. Please check your credentials and try again.',
+        error: error.message || 'Failed to sign in. Please check your credentials and try again.',
       };
     }
   };
@@ -131,20 +130,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           data: metadata,
         },
       });
-
+      
       if (error) {
         throw error;
       }
-
+      
       return { success: true };
-    } catch (error) {
-      const authError = error as AuthError;
-      console.error('Sign up error:', authError);
+    } catch (error: any) {
+      console.error('Sign up error:', error);
       
       // Return friendly error message
       return {
         success: false,
-        error: authError.message || 'Failed to create account. Please try again later.',
+        error: error.message || 'Failed to create account. Please try again later.',
       };
     }
   };
@@ -158,13 +156,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
       
       return { success: true };
-    } catch (error) {
-      const authError = error as AuthError;
-      console.error('Sign out error:', authError);
+    } catch (error: any) {
+      console.error('Sign out error:', error);
       
       return {
         success: false,
-        error: authError.message || 'Failed to sign out. Please try again.',
+        error: error.message || 'Failed to sign out. Please try again.',
       };
     }
   };
@@ -196,8 +193,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     signOut,
     refreshSession,
   };
-
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  
+  return (
+    <AuthContext.Provider value={value}>
+      {children}
+    </AuthContext.Provider>
+  );
 };
 
 export const useAuth = (): AuthState => {
