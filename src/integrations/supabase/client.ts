@@ -20,8 +20,8 @@ export const supabase = createClient<Database>(
     },
     global: {
       // Add global error handler
-      fetch: (...args) => {
-        return fetch(...args).catch(error => {
+      fetch: (url: RequestInfo | URL, options?: RequestInit) => {
+        return fetch(url, options).catch(error => {
           console.error('Supabase request error:', error);
           // Re-throw for proper handling
           throw error;
