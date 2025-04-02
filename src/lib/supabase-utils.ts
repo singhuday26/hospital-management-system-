@@ -109,16 +109,16 @@ export const subscribeToTable = (
   event: 'INSERT' | 'UPDATE' | 'DELETE' | '*' = '*',
   callback: (payload: any) => void
 ) => {
-  // Fixed: Use the correct type annotation for the channel events
+  // Using correct typing for Supabase Realtime
   const channel = supabase
     .channel('table-db-changes')
     .on(
       'postgres_changes',
       {
-        event: event,
+        event,
         schema: 'public',
-        table: table,
-      } as any, // Type assertion to bypass strict type checking
+        table,
+      } as any, // Type assertion needed for compatibility with Supabase's typing
       callback
     )
     .subscribe();

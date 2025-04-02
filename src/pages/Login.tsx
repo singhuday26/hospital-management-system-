@@ -10,6 +10,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Separator } from '@/components/ui/separator';
 import FadeIn from '@/components/animations/FadeIn';
 import { useAuth } from '@/hooks/use-auth';
+import { supabase } from '@/integrations/supabase/client';
 
 export default function Login() {
   const navigate = useNavigate();
@@ -38,19 +39,34 @@ export default function Login() {
     setLoading(true);
     
     try {
-      const { success, error } = await signIn(loginEmail, loginPassword);
+      // First, check if Supabase is available
+      const { success: connectionSuccess } = await testConnection();
       
-      if (!success && error) {
+      if (!connectionSuccess) {
         toast({
-          title: "Login failed",
-          description: error,
+          title: "Connection error",
+          description: "Unable to connect to the authentication service. Please try again later.",
           variant: "destructive",
         });
+        setLoading(false);
+        return;
+      }
+      
+      const { success, error } = await signIn(loginEmail, loginPassword);
+      
+      if (!success) {
+        toast({
+          title: "Login failed",
+          description: error || "Please check your credentials and try again.",
+          variant: "destructive",
+        });
+        setLoading(false);
         return;
       }
       
       navigate('/dashboard');
     } catch (error: any) {
+      console.error("Login error:", error);
       toast({
         title: "Login failed",
         description: error.message || "Please check your credentials and try again.",
@@ -66,6 +82,30 @@ export default function Login() {
     setLoading(true);
     
     try {
+      // Validate form
+      if (!registerEmail || !registerPassword || !registerFirstName || !registerLastName) {
+        toast({
+          title: "Registration failed",
+          description: "Please fill in all required fields.",
+          variant: "destructive",
+        });
+        setLoading(false);
+        return;
+      }
+      
+      // First, check if Supabase is available
+      const { success: connectionSuccess } = await testConnection();
+      
+      if (!connectionSuccess) {
+        toast({
+          title: "Connection error",
+          description: "Unable to connect to the authentication service. Please try again later.",
+          variant: "destructive",
+        });
+        setLoading(false);
+        return;
+      }
+      
       const { success, error } = await signUp(
         registerEmail, 
         registerPassword, 
@@ -75,12 +115,13 @@ export default function Login() {
         }
       );
       
-      if (!success && error) {
+      if (!success) {
         toast({
           title: "Registration failed",
-          description: error,
+          description: error || "Please check your input and try again.",
           variant: "destructive",
         });
+        setLoading(false);
         return;
       }
       
@@ -90,6 +131,7 @@ export default function Login() {
       });
       
     } catch (error: any) {
+      console.error("Registration error:", error);
       toast({
         title: "Registration failed",
         description: error.message || "Please check your input and try again.",
@@ -97,6 +139,24 @@ export default function Login() {
       });
     } finally {
       setLoading(false);
+    }
+  };
+  
+  // Test Supabase connection
+  const testConnection = async () => {
+    try {
+      // Simple query to test connection
+      const { data, error } = await supabase.from('profiles').select('count').limit(1);
+      
+      if (error) {
+        console.error("Supabase connection test failed:", error);
+        return { success: false };
+      }
+      
+      return { success: true };
+    } catch (error) {
+      console.error("Supabase connection test exception:", error);
+      return { success: false };
     }
   };
   
@@ -129,6 +189,7 @@ export default function Login() {
                         onChange={(e) => setLoginEmail(e.target.value)}
                         required
                         autoComplete="email"
+                        disabled={loading || isLoading}
                       />
                     </div>
                     
@@ -142,6 +203,7 @@ export default function Login() {
                         onChange={(e) => setLoginPassword(e.target.value)}
                         required
                         autoComplete="current-password"
+                        disabled={loading || isLoading}
                       />
                       <Button
                         type="button"
@@ -149,6 +211,7 @@ export default function Login() {
                         size="icon"
                         className="absolute right-1 top-1/2 h-8 w-8 -translate-y-1/2 text-muted-foreground"
                         onClick={() => setShowPassword(!showPassword)}
+                        disabled={loading || isLoading}
                       >
                         {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                       </Button>
@@ -169,12 +232,14 @@ export default function Login() {
                       value={registerFirstName}
                       onChange={(e) => setRegisterFirstName(e.target.value)}
                       required
+                      disabled={loading || isLoading}
                     />
                     <Input
                       placeholder="Last Name"
                       value={registerLastName}
                       onChange={(e) => setRegisterLastName(e.target.value)}
                       required
+                      disabled={loading || isLoading}
                     />
                   </div>
                   
@@ -188,6 +253,7 @@ export default function Login() {
                       onChange={(e) => setRegisterEmail(e.target.value)}
                       required
                       autoComplete="email"
+                      disabled={loading || isLoading}
                     />
                   </div>
                   
@@ -201,6 +267,7 @@ export default function Login() {
                       onChange={(e) => setRegisterPassword(e.target.value)}
                       required
                       autoComplete="new-password"
+                      disabled={loading || isLoading}
                     />
                     <Button
                       type="button"
@@ -208,6 +275,7 @@ export default function Login() {
                       size="icon"
                       className="absolute right-1 top-1/2 h-8 w-8 -translate-y-1/2 text-muted-foreground"
                       onClick={() => setShowPassword(!showPassword)}
+                      disabled={loading || isLoading}
                     >
                       {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                     </Button>

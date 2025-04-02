@@ -14,6 +14,7 @@ interface AuthState {
   signUp: (email: string, password: string, metadata?: Record<string, any>) => Promise<{ success: boolean; error?: string }>;
   signOut: () => Promise<{ success: boolean; error?: string }>;
   refreshSession: () => Promise<boolean>;
+  loadUserRoles: (userId: string) => Promise<string[]>;
 }
 
 const AuthContext = createContext<AuthState | undefined>(undefined);
@@ -192,6 +193,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     signUp,
     signOut,
     refreshSession,
+    loadUserRoles,
   };
   
   return (

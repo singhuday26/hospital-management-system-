@@ -20,7 +20,7 @@ export const supabase = createClient<Database>(
     },
     global: {
       // Add global error handler
-      fetch: (...args: Parameters<typeof fetch>) => {
+      fetch: (...args) => {
         return fetch(...args).catch(error => {
           console.error('Supabase request error:', error);
           // Re-throw for proper handling
