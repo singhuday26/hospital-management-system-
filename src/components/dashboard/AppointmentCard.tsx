@@ -1,130 +1,158 @@
 
-import { CalendarDays, Clock, User, MoreHorizontal } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { 
-  DropdownMenu, 
-  DropdownMenuContent, 
+  Clock, 
+  Calendar, 
+  User, 
+  Stethoscope, 
+  MoreVertical,
+  FileText
+} from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import BlurCard from '../ui/BlurCard';
-import { cn } from '@/lib/utils';
-import { Appointment } from '@/lib/api-types';
+} from "@/components/ui/dropdown-menu";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import BlurCard from '@/components/ui/BlurCard';
+import { formatDate, formatTime } from '@/lib/utils';
+import { Appointment } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { updateAppointmentStatus } from '@/lib/supabase-service';
 
 interface AppointmentCardProps {
   appointment: Appointment;
-  onStatusChange?: () => void;
 }
 
-export default function AppointmentCard({ appointment, onStatusChange }: AppointmentCardProps) {
+export default function AppointmentCard({ appointment }: AppointmentCardProps) {
   const { toast } = useToast();
+  const navigate = useNavigate();
   
-  const handleStatusChange = async (status: 'confirmed' | 'cancelled' | 'completed') => {
+  // Format appointment date and time
+  const displayDate = formatDate(new Date(appointment.date));
+  const displayTime = appointment.time.substring(0, 5); // Format as HH:MM
+  
+  // Map status to badge colors
+  const getStatusColor = () => {
+    switch (appointment.status) {
+      case 'confirmed': return 'bg-green-500/10 text-green-500 border-green-500/20';
+      case 'scheduled': return 'bg-blue-500/10 text-blue-500 border-blue-500/20';
+      case 'cancelled': return 'bg-red-500/10 text-red-500 border-red-500/20';
+      case 'completed': return 'bg-gray-500/10 text-gray-500 border-gray-500/20';
+      default: return 'bg-gray-500/10 text-gray-500 border-gray-500/20';
+    }
+  };
+  
+  // Handle appointment actions
+  const handleStatusChange = async (status: 'scheduled' | 'confirmed' | 'cancelled' | 'completed') => {
     try {
-      const { error } = await updateAppointmentStatus(appointment.id, status);
+      const result = await updateAppointmentStatus(appointment.id, status);
       
-      if (error) {
+      if (!result.error) {
         toast({
-          title: "Error",
-          description: error,
-          variant: "destructive",
+          title: "Status Updated",
+          description: `Appointment is now ${status}`,
         });
-        return;
+      } else {
+        throw new Error(result.error);
       }
-      
+    } catch (error: any) {
       toast({
-        title: `Appointment ${status}`,
-        description: `The appointment has been ${status}`,
-      });
-      
-      if (onStatusChange) {
-        onStatusChange();
-      }
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "An unexpected error occurred",
+        title: "Action Failed",
+        description: error.message || "Could not update appointment status",
         variant: "destructive",
       });
     }
   };
-
-  const statusStyles = {
-    scheduled: "bg-blue-50 text-blue-600 border-blue-200",
-    confirmed: "bg-green-50 text-green-600 border-green-200",
-    cancelled: "bg-red-50 text-red-600 border-red-200",
-    completed: "bg-gray-50 text-gray-600 border-gray-200",
-  };
+  
+  const handleReschedule = useCallback(() => {
+    navigate(`/book-appointment?patientId=${appointment.patientId}&doctorId=${appointment.doctorId}`);
+  }, [navigate, appointment]);
 
   return (
-    <BlurCard className="h-full">
-      <div className="flex justify-between items-start">
-        <div className="flex gap-3 items-start">
-          <div className={cn(
-            "p-2 rounded-md",
-            appointment.type === 'Checkup' ? 'bg-blue-50 text-blue-500' :
-            appointment.type === 'Surgery' ? 'bg-purple-50 text-purple-500' :
-            appointment.type === 'Consultation' ? 'bg-green-50 text-green-500' :
-            'bg-gray-50 text-gray-500'
-          )}>
-            <CalendarDays className="h-5 w-5" />
+    <BlurCard>
+      <div className="space-y-4">
+        {/* Header with status badge and menu */}
+        <div className="flex justify-between items-center">
+          <Badge className={`${getStatusColor()}`}>
+            {appointment.status ? appointment.status.charAt(0).toUpperCase() + appointment.status.slice(1) : 'Scheduled'}
+          </Badge>
+          
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                <MoreVertical className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              {appointment.status !== 'confirmed' && (
+                <DropdownMenuItem onClick={() => handleStatusChange('confirmed')}>Confirm</DropdownMenuItem>
+              )}
+              {appointment.status !== 'completed' && (
+                <DropdownMenuItem onClick={() => handleStatusChange('completed')}>Mark as Completed</DropdownMenuItem>
+              )}
+              {appointment.status !== 'cancelled' && (
+                <DropdownMenuItem onClick={() => handleStatusChange('cancelled')} className="text-red-500 focus:text-red-500">
+                  Cancel
+                </DropdownMenuItem>
+              )}
+              <DropdownMenuItem onClick={handleReschedule}>Reschedule</DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+        
+        {/* Date and time */}
+        <div className="space-y-1.5">
+          <div className="flex items-center gap-2">
+            <Calendar className="h-4 w-4 text-muted-foreground" />
+            <span className="text-sm">{displayDate}</span>
           </div>
           
-          <div>
-            <div className="flex items-center gap-2">
-              <h3 className="font-medium text-sm">{appointment.type}</h3>
-              <span className={cn(
-                "text-xs px-2 py-0.5 rounded-full border", 
-                statusStyles[appointment.status as keyof typeof statusStyles]
-              )}>
-                {appointment.status}
-              </span>
-            </div>
-            <div className="mt-1 flex items-center gap-1.5 text-xs text-muted-foreground">
-              <User className="h-3 w-3" />
-              <span>{appointment.patientName}</span>
-            </div>
-            <div className="mt-1 flex items-center gap-1.5 text-xs text-muted-foreground">
-              <Clock className="h-3 w-3" />
-              <span>{appointment.time}</span>
-            </div>
+          <div className="flex items-center gap-2">
+            <Clock className="h-4 w-4 text-muted-foreground" />
+            <span className="text-sm">{displayTime}</span>
           </div>
         </div>
         
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="h-8 w-8">
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={() => handleStatusChange('confirmed')}>
-              Confirm
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handleStatusChange('completed')}>
-              Mark as Completed
-            </DropdownMenuItem>
-            <DropdownMenuItem 
-              onClick={() => handleStatusChange('cancelled')}
-              className="text-red-500 focus:text-red-500"
-            >
-              Cancel
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
-      
-      <div className="mt-3 pt-3 border-t border-border flex justify-between items-center">
-        <div className="text-xs">
-          <span className="text-muted-foreground">Doctor: </span>
-          <span className="font-medium">{appointment.doctorName}</span>
+        {/* Type */}
+        <div className="flex items-center gap-2">
+          <FileText className="h-4 w-4 text-muted-foreground" />
+          <span className="text-sm font-medium">{appointment.type}</span>
         </div>
         
-        <Button variant="outline" size="sm" className="text-xs">
-          View Details
-        </Button>
+        {/* Separator */}
+        <div className="h-px bg-border"></div>
+        
+        {/* Patient and doctor */}
+        <div className="space-y-1.5">
+          <div className="flex items-center gap-2">
+            <User className="h-4 w-4 text-muted-foreground" />
+            <span className="text-sm">{appointment.patientName}</span>
+          </div>
+          
+          <div className="flex items-center gap-2">
+            <Stethoscope className="h-4 w-4 text-muted-foreground" />
+            <span className="text-sm">{appointment.doctorName}</span>
+          </div>
+        </div>
+        
+        {/* Actions */}
+        <div className="flex gap-2">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={() => toast({
+              title: "View Details",
+              description: `Viewing details for appointment on ${displayDate}`,
+            })}
+            className="w-full"
+          >
+            View Details
+          </Button>
+        </div>
       </div>
     </BlurCard>
   );

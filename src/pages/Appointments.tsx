@@ -1,11 +1,13 @@
 
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { 
   CalendarPlus, 
   Search, 
   Calendar, 
   Filter, 
-  ChevronDown 
+  ChevronDown,
+  ArrowLeft
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -26,6 +28,7 @@ import AppointmentCard from '@/components/dashboard/AppointmentCard';
 import FadeIn from '@/components/animations/FadeIn';
 
 export default function Appointments() {
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [typeFilter, setTypeFilter] = useState<string[]>([]);
   
@@ -53,12 +56,31 @@ export default function Appointments() {
   const filteredUpcoming = filterAppointments(upcomingAppointments);
   const filteredCompleted = filterAppointments(completedAppointments);
   const filteredCancelled = filterAppointments(cancelledAppointments);
+  
+  const handleNewAppointment = () => {
+    navigate('/book-appointment');
+  };
+  
+  const handleBackClick = () => {
+    navigate(-1);
+  };
 
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-6 pt-24">
       <FadeIn>
-        <h1 className="text-3xl font-bold">Appointments</h1>
-        <p className="text-muted-foreground mt-1">Schedule and manage patient appointments</p>
+        <div className="flex items-center">
+          <Button
+            variant="ghost"
+            onClick={handleBackClick}
+            className="mr-2 p-0 h-8 w-8"
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
+          <div>
+            <h1 className="text-3xl font-bold">Appointments</h1>
+            <p className="text-muted-foreground mt-1">Schedule and manage patient appointments</p>
+          </div>
+        </div>
       </FadeIn>
       
       <FadeIn delay={100}>
@@ -140,7 +162,7 @@ export default function Appointments() {
               </DropdownMenuContent>
             </DropdownMenu>
             
-            <Button className="gap-2">
+            <Button className="gap-2" onClick={handleNewAppointment}>
               <CalendarPlus className="h-4 w-4" />
               New Appointment
             </Button>

@@ -7,7 +7,7 @@ import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { useEffect, lazy, Suspense, useState } from "react";
 import ErrorBoundary from "@/components/utils/ErrorBoundary";
 import LazyLoad from "@/components/utils/LazyLoad";
-import { AuthProvider } from "@/hooks/use-auth";  // Changed from AuthContextProvider to AuthProvider
+import { AuthProvider } from "@/hooks/use-auth";
 
 // Monitoring integrations
 import { initSentry } from "@/lib/sentry";
@@ -24,6 +24,7 @@ import Index from "./pages/Index";
 const Dashboard = lazy(() => import("./pages/Dashboard"));
 const Patients = lazy(() => import("./pages/Patients"));
 const Appointments = lazy(() => import("./pages/Appointments"));
+const BookAppointment = lazy(() => import("./pages/BookAppointment"));
 const Doctors = lazy(() => import("./pages/Doctors"));
 const Login = lazy(() => import("./pages/Login"));
 const Billing = lazy(() => import("./pages/Billing"));
@@ -138,6 +139,16 @@ const App = () => {
                     <AuthGuard>
                       <LazyLoad>
                         <Appointments />
+                      </LazyLoad>
+                    </AuthGuard>
+                  } 
+                />
+                <Route 
+                  path="/book-appointment" 
+                  element={
+                    <AuthGuard>
+                      <LazyLoad>
+                        <BookAppointment />
                       </LazyLoad>
                     </AuthGuard>
                   } 

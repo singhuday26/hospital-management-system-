@@ -1,5 +1,6 @@
 
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { MoreHorizontal, Phone, Mail, Calendar } from 'lucide-react';
 import { 
   DropdownMenu, 
@@ -19,6 +20,7 @@ interface PatientCardProps {
 
 export default function PatientCard({ patient, compact = false }: PatientCardProps) {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [isHovered, setIsHovered] = useState(false);
   
   const handleEditClick = () => {
@@ -34,6 +36,18 @@ export default function PatientCard({ patient, compact = false }: PatientCardPro
       description: `${patient.name} has been deleted`,
       variant: "destructive",
     });
+  };
+  
+  const handleViewDetailsClick = () => {
+    // This would navigate to a patient details page
+    toast({
+      title: "View Patient",
+      description: `Viewing details for ${patient.name}`,
+    });
+  };
+  
+  const handleBookAppointmentClick = () => {
+    navigate(`/book-appointment?patientId=${patient.id}`);
   };
 
   return (
@@ -103,10 +117,10 @@ export default function PatientCard({ patient, compact = false }: PatientCardPro
           <div className="h-px bg-border my-3"></div>
           
           <div className="flex gap-2 mt-2">
-            <Button variant="outline" size="sm" className="w-full text-xs">
+            <Button variant="outline" size="sm" className="w-full text-xs" onClick={handleViewDetailsClick}>
               View Details
             </Button>
-            <Button size="sm" className="w-full text-xs">
+            <Button size="sm" className="w-full text-xs" onClick={handleBookAppointmentClick}>
               Book Appointment
             </Button>
           </div>
