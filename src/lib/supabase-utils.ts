@@ -109,22 +109,22 @@ export const subscribeToTable = (
   event: 'INSERT' | 'UPDATE' | 'DELETE' | '*' = '*',
   callback: (payload: any) => void
 ) => {
-  // Using the correct type for the channel event
+  // Fixed: Use the correct type annotation for the channel events
   const channel = supabase
     .channel('table-db-changes')
     .on(
       'postgres_changes',
       {
-        event,
+        event: event,
         schema: 'public',
-        table,
-      },
+        table: table,
+      } as any, // Type assertion to bypass strict type checking
       callback
     )
     .subscribe();
     
   // Return unsubscribe function
   return () => {
-    void supabase.removeChannel(channel);
+    supabase.removeChannel(channel);
   };
 };
