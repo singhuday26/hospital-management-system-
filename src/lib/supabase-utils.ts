@@ -124,6 +124,6 @@ export const subscribeToTable = (
     
   // Return unsubscribe function
   return () => {
-    supabase.removeChannel(channel);
+    void supabase.removeChannel(channel);
   };
 };
