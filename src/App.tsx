@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { useEffect, lazy, Suspense, useState } from "react";
 import ErrorBoundary from "@/components/utils/ErrorBoundary";
 import LazyLoad from "@/components/utils/LazyLoad";
+import { AuthContextProvider } from "@/components/auth/AuthContext";
 
 // Monitoring integrations
 import { initSentry } from "@/lib/sentry";
@@ -98,86 +99,88 @@ const App = () => {
   return (
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <PageViewTracker />
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/login" element={
-                <LazyLoad>
-                  <Login />
-                </LazyLoad>
-              } />
-              <Route 
-                path="/dashboard" 
-                element={
-                  <AuthGuard>
-                    <LazyLoad>
-                      <Dashboard />
-                    </LazyLoad>
-                  </AuthGuard>
-                } 
-              />
-              <Route 
-                path="/patients" 
-                element={
-                  <AuthGuard>
-                    <LazyLoad>
-                      <Patients />
-                    </LazyLoad>
-                  </AuthGuard>
-                } 
-              />
-              <Route 
-                path="/appointments" 
-                element={
-                  <AuthGuard>
-                    <LazyLoad>
-                      <Appointments />
-                    </LazyLoad>
-                  </AuthGuard>
-                } 
-              />
-              <Route 
-                path="/doctors" 
-                element={
-                  <AuthGuard>
-                    <LazyLoad>
-                      <Doctors />
-                    </LazyLoad>
-                  </AuthGuard>
-                } 
-              />
-              <Route 
-                path="/billing" 
-                element={
-                  <AuthGuard>
-                    <LazyLoad>
-                      <Billing />
-                    </LazyLoad>
-                  </AuthGuard>
-                } 
-              />
-              <Route 
-                path="/inventory" 
-                element={
-                  <AuthGuard allowedRoles={['admin']}>
-                    <LazyLoad>
-                      <Inventory />
-                    </LazyLoad>
-                  </AuthGuard>
-                } 
-              />
-              <Route path="*" element={
-                <LazyLoad>
-                  <NotFound />
-                </LazyLoad>
-              } />
-            </Routes>
-          </BrowserRouter>
-        </TooltipProvider>
+        <AuthContextProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            <BrowserRouter>
+              <PageViewTracker />
+              <Routes>
+                <Route path="/" element={<Index />} />
+                <Route path="/login" element={
+                  <LazyLoad>
+                    <Login />
+                  </LazyLoad>
+                } />
+                <Route 
+                  path="/dashboard" 
+                  element={
+                    <AuthGuard>
+                      <LazyLoad>
+                        <Dashboard />
+                      </LazyLoad>
+                    </AuthGuard>
+                  } 
+                />
+                <Route 
+                  path="/patients" 
+                  element={
+                    <AuthGuard>
+                      <LazyLoad>
+                        <Patients />
+                      </LazyLoad>
+                    </AuthGuard>
+                  } 
+                />
+                <Route 
+                  path="/appointments" 
+                  element={
+                    <AuthGuard>
+                      <LazyLoad>
+                        <Appointments />
+                      </LazyLoad>
+                    </AuthGuard>
+                  } 
+                />
+                <Route 
+                  path="/doctors" 
+                  element={
+                    <AuthGuard>
+                      <LazyLoad>
+                        <Doctors />
+                      </LazyLoad>
+                    </AuthGuard>
+                  } 
+                />
+                <Route 
+                  path="/billing" 
+                  element={
+                    <AuthGuard>
+                      <LazyLoad>
+                        <Billing />
+                      </LazyLoad>
+                    </AuthGuard>
+                  } 
+                />
+                <Route 
+                  path="/inventory" 
+                  element={
+                    <AuthGuard allowedRoles={['admin']}>
+                      <LazyLoad>
+                        <Inventory />
+                      </LazyLoad>
+                    </AuthGuard>
+                  } 
+                />
+                <Route path="*" element={
+                  <LazyLoad>
+                    <NotFound />
+                  </LazyLoad>
+                } />
+              </Routes>
+            </BrowserRouter>
+          </TooltipProvider>
+        </AuthContextProvider>
       </QueryClientProvider>
     </ErrorBoundary>
   );

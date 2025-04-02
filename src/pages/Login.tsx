@@ -6,17 +6,17 @@ import { Card, CardHeader, CardContent, CardFooter } from '@/components/ui/card'
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Separator } from '@/components/ui/separator';
 import FadeIn from '@/components/animations/FadeIn';
+import { useAuth } from '@/hooks/use-auth';
 
 export default function Login() {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { isAuthenticated, isLoading, signIn, signUp } = useAuth();
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [session, setSession] = useState<any>(null);
   
   // Login form state
   const [loginEmail, setLoginEmail] = useState('');
@@ -28,21 +28,8 @@ export default function Login() {
   const [registerFirstName, setRegisterFirstName] = useState('');
   const [registerLastName, setRegisterLastName] = useState('');
   
-  // Check if user is already logged in
-  useState(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-    });
-    
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-    });
-    
-    return () => subscription.unsubscribe();
-  });
-  
   // If user is logged in, redirect to dashboard
-  if (session) {
+  if (isAuthenticated && !isLoading) {
     return <Navigate to="/dashboard" replace />;
   }
   
@@ -51,12 +38,16 @@ export default function Login() {
     setLoading(true);
     
     try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email: loginEmail,
-        password: loginPassword,
-      });
+      const { success, error } = await signIn(loginEmail, loginPassword);
       
-      if (error) throw error;
+      if (!success && error) {
+        toast({
+          title: "Login failed",
+          description: error,
+          variant: "destructive",
+        });
+        return;
+      }
       
       navigate('/dashboard');
     } catch (error: any) {
@@ -75,18 +66,23 @@ export default function Login() {
     setLoading(true);
     
     try {
-      const { error } = await supabase.auth.signUp({
-        email: registerEmail,
-        password: registerPassword,
-        options: {
-          data: {
-            first_name: registerFirstName,
-            last_name: registerLastName,
-          },
-        },
-      });
+      const { success, error } = await signUp(
+        registerEmail, 
+        registerPassword, 
+        {
+          first_name: registerFirstName,
+          last_name: registerLastName,
+        }
+      );
       
-      if (error) throw error;
+      if (!success && error) {
+        toast({
+          title: "Registration failed",
+          description: error,
+          variant: "destructive",
+        });
+        return;
+      }
       
       toast({
         title: "Registration successful",
@@ -132,6 +128,7 @@ export default function Login() {
                         value={loginEmail}
                         onChange={(e) => setLoginEmail(e.target.value)}
                         required
+                        autoComplete="email"
                       />
                     </div>
                     
@@ -144,6 +141,7 @@ export default function Login() {
                         value={loginPassword}
                         onChange={(e) => setLoginPassword(e.target.value)}
                         required
+                        autoComplete="current-password"
                       />
                       <Button
                         type="button"
@@ -157,7 +155,7 @@ export default function Login() {
                     </div>
                   </div>
                   
-                  <Button type="submit" className="w-full" disabled={loading}>
+                  <Button type="submit" className="w-full" disabled={loading || isLoading}>
                     {loading ? "Logging in..." : "Login"}
                   </Button>
                 </form>
@@ -189,6 +187,7 @@ export default function Login() {
                       value={registerEmail}
                       onChange={(e) => setRegisterEmail(e.target.value)}
                       required
+                      autoComplete="email"
                     />
                   </div>
                   
@@ -201,6 +200,7 @@ export default function Login() {
                       value={registerPassword}
                       onChange={(e) => setRegisterPassword(e.target.value)}
                       required
+                      autoComplete="new-password"
                     />
                     <Button
                       type="button"
@@ -213,7 +213,7 @@ export default function Login() {
                     </Button>
                   </div>
                   
-                  <Button type="submit" className="w-full" disabled={loading}>
+                  <Button type="submit" className="w-full" disabled={loading || isLoading}>
                     {loading ? "Registering..." : "Register"}
                   </Button>
                 </form>
