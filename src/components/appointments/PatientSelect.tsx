@@ -3,14 +3,16 @@ import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/comp
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Patient } from '@/lib/types';
 import { Control } from 'react-hook-form';
+import { Loader2 } from 'lucide-react';
 
 interface PatientSelectProps {
   patients: Patient[];
   control: Control<any>;
   disabled?: boolean;
+  isLoading?: boolean;
 }
 
-export default function PatientSelect({ patients, control, disabled = false }: PatientSelectProps) {
+export default function PatientSelect({ patients, control, disabled = false, isLoading = false }: PatientSelectProps) {
   return (
     <FormField
       control={control}
@@ -19,21 +21,26 @@ export default function PatientSelect({ patients, control, disabled = false }: P
         <FormItem>
           <FormLabel>Patient</FormLabel>
           <Select
-            disabled={disabled}
+            disabled={disabled || isLoading}
             onValueChange={field.onChange}
             value={field.value}
           >
             <FormControl>
-              <SelectTrigger>
-                <SelectValue placeholder="Select a patient" />
+              <SelectTrigger className="flex justify-between items-center">
+                <SelectValue placeholder={isLoading ? "Loading patients..." : "Select a patient"} />
+                {isLoading && <Loader2 className="h-4 w-4 animate-spin ml-2" />}
               </SelectTrigger>
             </FormControl>
             <SelectContent>
-              {patients.map((patient) => (
+              {patients.length > 0 ? patients.map((patient) => (
                 <SelectItem key={patient.id} value={patient.id}>
                   {patient.name}
                 </SelectItem>
-              ))}
+              )) : (
+                <div className="p-2 text-center text-sm text-muted-foreground">
+                  {isLoading ? "Loading patients..." : "No patients found"}
+                </div>
+              )}
             </SelectContent>
           </Select>
           <FormMessage />

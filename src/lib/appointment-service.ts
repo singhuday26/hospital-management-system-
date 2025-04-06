@@ -91,10 +91,11 @@ export const getAvailableTimeSlots = async (
     if (doctorError) throw doctorError;
     
     // Check if doctor works on this day of the week
-    const dayOfWeek = new Date(date).toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
-    const availableDays = doctorData.available_days || ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'];
+    const dayOfWeek = new Date(date).toLocaleDateString('en-US', { weekday: 'long' });
+    const availableDays = doctorData.available_days?.map(day => day.toLowerCase()) || 
+                          ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'];
     
-    if (!availableDays.includes(dayOfWeek)) {
+    if (!availableDays.includes(dayOfWeek.toLowerCase())) {
       return [];
     }
     

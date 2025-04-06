@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -13,7 +13,7 @@ import FadeIn from '@/components/animations/FadeIn';
 import { BackButton } from '@/components/ui/back-button';
 import { useAppointmentFormData } from '@/hooks/use-appointment-form-data';
 
-// Import the new component modules
+// Import the component modules
 import PatientSelect from './PatientSelect';
 import DoctorSelect from './DoctorSelect';
 import AppointmentTypeSelect from './AppointmentTypeSelect';
@@ -78,9 +78,7 @@ export default function AppointmentForm({
   const selectedDate = form.watch('date');
   
   // Fetch available time slots when doctor and date are selected
-  import React from 'react';
-  
-  React.useEffect(() => {
+  useEffect(() => {
     if (selectedDoctor && selectedDate) {
       fetchTimeSlots(selectedDoctor, selectedDate);
     }
@@ -103,6 +101,11 @@ export default function AppointmentForm({
       const result = await bookAppointment(appointmentData);
       
       if (result.success) {
+        toast({
+          title: "Success",
+          description: "Appointment booked successfully",
+        });
+        
         if (onSuccess) {
           onSuccess();
         } else {
