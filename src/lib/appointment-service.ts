@@ -21,17 +21,28 @@ export const bookAppointment = async (data: AppointmentFormData): Promise<{
   error?: string;
 }> => {
   try {
+    // Clean and validate the input data
+    const cleanData = {
+      patient_id: data.patientId.trim(),
+      doctor_id: data.doctorId.trim(),
+      date: data.date,
+      time: data.time,
+      type: data.type,
+      notes: data.notes?.trim() || null,
+      status: 'scheduled'
+    };
+
+    // Check for required fields
+    if (!cleanData.patient_id || !cleanData.doctor_id || !cleanData.date || !cleanData.time) {
+      return {
+        success: false,
+        error: "All required fields must be provided"
+      };
+    }
+
     const { data: newAppointment, error } = await supabase
       .from('appointments')
-      .insert([{
-        patient_id: data.patientId,
-        doctor_id: data.doctorId,
-        date: data.date,
-        time: data.time,
-        type: data.type,
-        notes: data.notes,
-        status: 'scheduled'
-      }])
+      .insert([cleanData])
       .select('*, patients:patient_id(name), doctors:doctor_id(name)')
       .single();
 
@@ -73,14 +84,33 @@ export const bookAppointment = async (data: AppointmentFormData): Promise<{
   }
 };
 
+// Cache for time slots to prevent redundant API calls
+const timeSlotCache = new Map<string, {
+  slots: string[],
+  timestamp: number
+}>();
+
 /**
  * Gets available time slots for a doctor on a specific date
+ * Includes caching to improve performance
  */
 export const getAvailableTimeSlots = async (
   doctorId: string,
   date: string
 ): Promise<string[]> => {
   try {
+    // Create a cache key from doctor ID and date
+    const cacheKey = `${doctorId}-${date}`;
+    
+    // Check if we have cached data less than 1 minute old
+    const cachedData = timeSlotCache.get(cacheKey);
+    const now = Date.now();
+    
+    if (cachedData && (now - cachedData.timestamp < 60000)) {
+      console.log('Using cached time slots');
+      return cachedData.slots;
+    }
+    
     // First, get the doctor's availability
     const { data: doctorData, error: doctorError } = await supabase
       .from('doctors')
@@ -96,6 +126,8 @@ export const getAvailableTimeSlots = async (
                           ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'];
     
     if (!availableDays.includes(dayOfWeek.toLowerCase())) {
+      // Cache the empty result
+      timeSlotCache.set(cacheKey, { slots: [], timestamp: now });
       return [];
     }
     
@@ -117,7 +149,12 @@ export const getAvailableTimeSlots = async (
     const slots = generateTimeSlots(startTime, endTime, 30);
     
     // Filter out booked slots
-    return slots.filter(slot => !bookedTimes.includes(slot));
+    const availableSlots = slots.filter(slot => !bookedTimes.includes(slot));
+    
+    // Cache the result
+    timeSlotCache.set(cacheKey, { slots: availableSlots, timestamp: now });
+    
+    return availableSlots;
   } catch (error) {
     console.error('Error fetching available time slots:', error);
     return [];

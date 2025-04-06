@@ -3,6 +3,7 @@ import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/comp
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Control } from 'react-hook-form';
 import { Loader2 } from 'lucide-react';
+import { memo } from 'react';
 
 interface TimeSlotSelectProps {
   control: Control<any>;
@@ -10,16 +11,19 @@ interface TimeSlotSelectProps {
   isDisabled: boolean;
   hasSelectedDoctor: boolean;
   hasSelectedDate: boolean;
+  isLoading?: boolean;
 }
 
-export default function TimeSlotSelect({ 
+function TimeSlotSelect({ 
   control, 
   availableTimeSlots, 
   isDisabled, 
   hasSelectedDoctor, 
-  hasSelectedDate 
+  hasSelectedDate,
+  isLoading = false 
 }: TimeSlotSelectProps) {
-  const isLoadingSlots = hasSelectedDoctor && hasSelectedDate && availableTimeSlots.length === 0;
+  const showLoadingIndicator = hasSelectedDoctor && hasSelectedDate && isLoading;
+  const showNoSlotsMessage = hasSelectedDoctor && hasSelectedDate && !isLoading && availableTimeSlots.length === 0;
   
   return (
     <FormField
@@ -29,33 +33,39 @@ export default function TimeSlotSelect({
         <FormItem>
           <FormLabel>Time</FormLabel>
           <Select
-            disabled={isDisabled || !hasSelectedDate || !hasSelectedDoctor}
+            disabled={isDisabled || !hasSelectedDate || !hasSelectedDoctor || isLoading}
             onValueChange={field.onChange}
             value={field.value}
+            defaultValue={field.value}
           >
             <FormControl>
               <SelectTrigger className="flex justify-between items-center">
                 <SelectValue placeholder={
                   !hasSelectedDate || !hasSelectedDoctor 
                     ? "Select date and doctor first"
-                    : isLoadingSlots
+                    : showLoadingIndicator
                     ? "Loading available slots..."
-                    : availableTimeSlots.length === 0
+                    : showNoSlotsMessage
                     ? "No available slots"
                     : "Select a time"
                 } />
-                {isLoadingSlots && <Loader2 className="h-4 w-4 animate-spin ml-2" />}
+                {showLoadingIndicator && <Loader2 className="h-4 w-4 animate-spin ml-2" />}
               </SelectTrigger>
             </FormControl>
             <SelectContent>
-              {availableTimeSlots.map((time) => (
-                <SelectItem key={time} value={time}>
-                  {time.substring(0, 5)}
-                </SelectItem>
-              ))}
-              {availableTimeSlots.length === 0 && hasSelectedDate && hasSelectedDoctor && (
+              {availableTimeSlots.length > 0 ? (
+                availableTimeSlots.map((time) => (
+                  <SelectItem key={time} value={time}>
+                    {time.substring(0, 5)}
+                  </SelectItem>
+                ))
+              ) : (
                 <div className="p-2 text-center text-sm text-muted-foreground">
-                  No available slots for selected date
+                  {showLoadingIndicator 
+                    ? "Loading available slots..." 
+                    : showNoSlotsMessage
+                    ? "No available slots for selected date"
+                    : "Select date and doctor first"}
                 </div>
               )}
             </SelectContent>
@@ -66,3 +76,6 @@ export default function TimeSlotSelect({
     />
   );
 }
+
+// Memoize component to prevent unnecessary re-renders
+export default memo(TimeSlotSelect);

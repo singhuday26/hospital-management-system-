@@ -4,6 +4,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Doctor } from '@/lib/types';
 import { Control } from 'react-hook-form';
 import { Loader2 } from 'lucide-react';
+import { memo } from 'react';
 
 interface DoctorSelectProps {
   doctors: Doctor[];
@@ -12,7 +13,7 @@ interface DoctorSelectProps {
   isLoading?: boolean;
 }
 
-export default function DoctorSelect({ doctors, control, disabled = false, isLoading = false }: DoctorSelectProps) {
+function DoctorSelect({ doctors, control, disabled = false, isLoading = false }: DoctorSelectProps) {
   return (
     <FormField
       control={control}
@@ -24,6 +25,7 @@ export default function DoctorSelect({ doctors, control, disabled = false, isLoa
             disabled={disabled || isLoading}
             onValueChange={field.onChange}
             value={field.value}
+            defaultValue={field.value}
           >
             <FormControl>
               <SelectTrigger className="flex justify-between items-center">
@@ -32,14 +34,21 @@ export default function DoctorSelect({ doctors, control, disabled = false, isLoa
               </SelectTrigger>
             </FormControl>
             <SelectContent>
-              {doctors.length > 0 ? doctors.map((doctor) => (
-                <SelectItem key={doctor.id} value={doctor.id}>
-                  {doctor.name} - {doctor.specialty}
-                </SelectItem>
-              )) : (
+              {!isLoading && doctors.length === 0 && (
                 <div className="p-2 text-center text-sm text-muted-foreground">
-                  {isLoading ? "Loading doctors..." : "No doctors found"}
+                  No doctors found
                 </div>
+              )}
+              {isLoading ? (
+                <div className="p-2 text-center text-sm text-muted-foreground">
+                  Loading doctors...
+                </div>
+              ) : (
+                doctors.map((doctor) => (
+                  <SelectItem key={doctor.id} value={doctor.id}>
+                    {doctor.name} - {doctor.specialty}
+                  </SelectItem>
+                ))
               )}
             </SelectContent>
           </Select>
@@ -49,3 +58,6 @@ export default function DoctorSelect({ doctors, control, disabled = false, isLoa
     />
   );
 }
+
+// Memoize component to prevent unnecessary re-renders
+export default memo(DoctorSelect);

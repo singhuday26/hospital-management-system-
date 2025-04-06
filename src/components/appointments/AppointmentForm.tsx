@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -53,14 +53,17 @@ export default function AppointmentForm({
 }: AppointmentFormProps) {
   const { toast } = useToast();
   const navigate = useNavigate();
-  const [isLoading, setIsLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   
   // Use our custom hook to manage data fetching
   const { 
     patients, 
     doctors, 
     availableTimeSlots, 
-    fetchTimeSlots 
+    fetchTimeSlots,
+    isLoadingPatients,
+    isLoadingDoctors,
+    isLoadingTimeSlots
   } = useAppointmentFormData();
 
   // Initialize form
@@ -70,6 +73,7 @@ export default function AppointmentForm({
       patientId: initialPatientId || '',
       doctorId: initialDoctorId || '',
       notes: '',
+      type: 'Checkup',
     },
   });
   
@@ -77,15 +81,23 @@ export default function AppointmentForm({
   const selectedDoctor = form.watch('doctorId');
   const selectedDate = form.watch('date');
   
-  // Fetch available time slots when doctor and date are selected
-  useEffect(() => {
+  // Fetch available time slots when doctor and date are selected - memoized to prevent unnecessary fetches
+  const fetchTimeSlotsForSelection = useCallback(() => {
     if (selectedDoctor && selectedDate) {
       fetchTimeSlots(selectedDoctor, selectedDate);
     }
   }, [selectedDoctor, selectedDate, fetchTimeSlots]);
   
+  // Effect for fetching time slots
+  useEffect(() => {
+    fetchTimeSlotsForSelection();
+  }, [fetchTimeSlotsForSelection]);
+  
+  // Submit handler - optimized to prevent double submissions
   const onSubmit = async (data: z.infer<typeof formSchema>) => {
-    setIsLoading(true);
+    if (isSubmitting) return;
+    
+    setIsSubmitting(true);
     
     try {
       // Format the data
@@ -120,7 +132,7 @@ export default function AppointmentForm({
         variant: 'destructive',
       });
     } finally {
-      setIsLoading(false);
+      setIsSubmitting(false);
     }
   };
   
@@ -139,46 +151,53 @@ export default function AppointmentForm({
               <PatientSelect 
                 patients={patients} 
                 control={form.control} 
-                disabled={isLoading} 
+                disabled={isSubmitting} 
+                isLoading={isLoadingPatients}
               />
               
               {/* Doctor Selection */}
               <DoctorSelect 
                 doctors={doctors} 
                 control={form.control} 
-                disabled={isLoading} 
+                disabled={isSubmitting} 
+                isLoading={isLoadingDoctors}
               />
               
               {/* Appointment Type Selection */}
               <AppointmentTypeSelect 
                 control={form.control} 
-                disabled={isLoading} 
+                disabled={isSubmitting} 
               />
               
               {/* Date Selection */}
               <DateSelect 
                 control={form.control} 
-                disabled={isLoading} 
+                disabled={isSubmitting} 
               />
               
               {/* Time Selection */}
               <TimeSlotSelect 
                 control={form.control}
                 availableTimeSlots={availableTimeSlots}
-                isDisabled={isLoading}
+                isDisabled={isSubmitting}
                 hasSelectedDoctor={!!selectedDoctor}
                 hasSelectedDate={!!selectedDate}
+                isLoading={isLoadingTimeSlots}
               />
               
               {/* Notes */}
               <NotesField 
                 control={form.control} 
-                disabled={isLoading} 
+                disabled={isSubmitting} 
               />
             </div>
             
-            <Button type="submit" disabled={isLoading} className="w-full">
-              {isLoading ? "Booking..." : "Book Appointment"}
+            <Button 
+              type="submit" 
+              disabled={isSubmitting} 
+              className="w-full"
+            >
+              {isSubmitting ? "Booking..." : "Book Appointment"}
             </Button>
           </form>
         </Form>

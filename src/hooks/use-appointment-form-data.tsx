@@ -1,43 +1,43 @@
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { format } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Patient, Doctor } from '@/lib/types';
 import { getAvailableTimeSlots } from '@/lib/appointment-service';
-import { Json } from '@/integrations/supabase/types';
 
 export function useAppointmentFormData() {
   const { toast } = useToast();
   const [patients, setPatients] = useState<Patient[]>([]);
   const [doctors, setDoctors] = useState<Doctor[]>([]);
   const [availableTimeSlots, setAvailableTimeSlots] = useState<string[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingPatients, setIsLoadingPatients] = useState(true);
+  const [isLoadingDoctors, setIsLoadingDoctors] = useState(true);
+  const [isLoadingTimeSlots, setIsLoadingTimeSlots] = useState(false);
   
-  // Fetch patients and doctors
+  // Computed property for overall loading state
+  const isLoading = useMemo(() => 
+    isLoadingPatients || isLoadingDoctors, 
+    [isLoadingPatients, isLoadingDoctors]
+  );
+  
+  // Fetch patients - separated for better error handling
   useEffect(() => {
-    const fetchData = async () => {
-      setIsLoading(true);
+    const fetchPatients = async () => {
+      setIsLoadingPatients(true);
       try {
-        // Use Promise.all to fetch patients and doctors in parallel
-        const [patientsResponse, doctorsResponse] = await Promise.all([
-          supabase.from('patients').select('*').order('name'),
-          supabase.from('doctors').select('*').order('name')
-        ]);
+        const { data, error } = await supabase
+          .from('patients')
+          .select('*')
+          .order('name');
         
-        if (patientsResponse.error) {
-          throw new Error(`Error fetching patients: ${patientsResponse.error.message}`);
-        }
-        
-        if (doctorsResponse.error) {
-          throw new Error(`Error fetching doctors: ${doctorsResponse.error.message}`);
-        }
+        if (error) throw error;
         
         // Transform from DB format to our Patient type
-        const transformedPatients: Patient[] = patientsResponse.data.map(patient => ({
+        const transformedPatients: Patient[] = data.map(patient => ({
           id: patient.id,
           name: patient.name,
-          patientId: patient.id, // Use the same ID for both fields
+          patientId: patient.id,
           gender: patient.gender as 'male' | 'female' | 'other',
           age: patient.age || 0,
           phone: patient.phone || '',
@@ -48,15 +48,43 @@ export function useAppointmentFormData() {
           medicalHistory: patient.medical_history 
             ? (Array.isArray(patient.medical_history) 
                 ? (patient.medical_history as any[]).map(item => ({
-                    condition: item?.condition || '',
-                    diagnosedDate: item?.diagnosedDate || ''
+                    condition: (item as any)?.condition || '',
+                    diagnosedDate: (item as any)?.diagnosedDate || ''
                   }))
                 : []) 
             : []
         }));
         
+        setPatients(transformedPatients);
+      } catch (error) {
+        console.error('Error fetching patients:', error);
+        toast({
+          title: 'Error',
+          description: error instanceof Error ? error.message : 'Failed to load patients',
+          variant: 'destructive',
+        });
+      } finally {
+        setIsLoadingPatients(false);
+      }
+    };
+    
+    fetchPatients();
+  }, [toast]);
+  
+  // Fetch doctors - separated for better error handling
+  useEffect(() => {
+    const fetchDoctors = async () => {
+      setIsLoadingDoctors(true);
+      try {
+        const { data, error } = await supabase
+          .from('doctors')
+          .select('*')
+          .order('name');
+        
+        if (error) throw error;
+        
         // Transform from DB format to our Doctor type
-        const transformedDoctors: Doctor[] = doctorsResponse.data.map(doctor => ({
+        const transformedDoctors: Doctor[] = data.map(doctor => ({
           id: doctor.id,
           name: doctor.name,
           specialty: doctor.specialty,
@@ -74,21 +102,20 @@ export function useAppointmentFormData() {
           about: doctor.about || ''
         }));
         
-        setPatients(transformedPatients);
         setDoctors(transformedDoctors);
       } catch (error) {
-        console.error('Error fetching data:', error);
+        console.error('Error fetching doctors:', error);
         toast({
           title: 'Error',
-          description: error instanceof Error ? error.message : 'Failed to load data',
+          description: error instanceof Error ? error.message : 'Failed to load doctors',
           variant: 'destructive',
         });
       } finally {
-        setIsLoading(false);
+        setIsLoadingDoctors(false);
       }
     };
     
-    fetchData();
+    fetchDoctors();
   }, [toast]);
   
   // Helper function to fetch time slots when doctor and date are selected
@@ -98,6 +125,7 @@ export function useAppointmentFormData() {
       return;
     }
     
+    setIsLoadingTimeSlots(true);
     try {
       const formattedDate = format(date, 'yyyy-MM-dd');
       const slots = await getAvailableTimeSlots(doctorId, formattedDate);
@@ -110,6 +138,8 @@ export function useAppointmentFormData() {
         variant: 'destructive',
       });
       setAvailableTimeSlots([]);
+    } finally {
+      setIsLoadingTimeSlots(false);
     }
   }, [toast]);
   
@@ -119,6 +149,9 @@ export function useAppointmentFormData() {
     availableTimeSlots,
     fetchTimeSlots,
     setAvailableTimeSlots,
-    isLoading
+    isLoading,
+    isLoadingPatients,
+    isLoadingDoctors,
+    isLoadingTimeSlots
   };
 }

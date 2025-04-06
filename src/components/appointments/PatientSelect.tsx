@@ -4,6 +4,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Patient } from '@/lib/types';
 import { Control } from 'react-hook-form';
 import { Loader2 } from 'lucide-react';
+import { memo } from 'react';
 
 interface PatientSelectProps {
   patients: Patient[];
@@ -12,7 +13,7 @@ interface PatientSelectProps {
   isLoading?: boolean;
 }
 
-export default function PatientSelect({ patients, control, disabled = false, isLoading = false }: PatientSelectProps) {
+function PatientSelect({ patients, control, disabled = false, isLoading = false }: PatientSelectProps) {
   return (
     <FormField
       control={control}
@@ -24,6 +25,7 @@ export default function PatientSelect({ patients, control, disabled = false, isL
             disabled={disabled || isLoading}
             onValueChange={field.onChange}
             value={field.value}
+            defaultValue={field.value}
           >
             <FormControl>
               <SelectTrigger className="flex justify-between items-center">
@@ -32,14 +34,21 @@ export default function PatientSelect({ patients, control, disabled = false, isL
               </SelectTrigger>
             </FormControl>
             <SelectContent>
-              {patients.length > 0 ? patients.map((patient) => (
-                <SelectItem key={patient.id} value={patient.id}>
-                  {patient.name}
-                </SelectItem>
-              )) : (
+              {!isLoading && patients.length === 0 && (
                 <div className="p-2 text-center text-sm text-muted-foreground">
-                  {isLoading ? "Loading patients..." : "No patients found"}
+                  No patients found
                 </div>
+              )}
+              {isLoading ? (
+                <div className="p-2 text-center text-sm text-muted-foreground">
+                  Loading patients...
+                </div>
+              ) : (
+                patients.map((patient) => (
+                  <SelectItem key={patient.id} value={patient.id}>
+                    {patient.name}
+                  </SelectItem>
+                ))
               )}
             </SelectContent>
           </Select>
@@ -49,3 +58,6 @@ export default function PatientSelect({ patients, control, disabled = false, isL
     />
   );
 }
+
+// Memoize component to prevent unnecessary re-renders
+export default memo(PatientSelect);
