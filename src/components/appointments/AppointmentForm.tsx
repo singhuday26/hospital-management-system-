@@ -12,6 +12,7 @@ import { AppointmentFormData, bookAppointment } from '@/lib/appointment-service'
 import FadeIn from '@/components/animations/FadeIn';
 import { BackButton } from '@/components/ui/back-button';
 import { useAppointmentFormData } from '@/hooks/use-appointment-form-data';
+import { Loader2 } from 'lucide-react';
 
 // Import the component modules
 import PatientSelect from './PatientSelect';
@@ -123,12 +124,14 @@ export default function AppointmentForm({
         } else {
           navigate('/appointments');
         }
+      } else {
+        throw new Error(result.error || "Unknown error occurred");
       }
     } catch (error) {
       console.error('Error creating appointment:', error);
       toast({
         title: 'Error',
-        description: 'Something went wrong. Please try again.',
+        description: error instanceof Error ? error.message : 'Something went wrong. Please try again.',
         variant: 'destructive',
       });
     } finally {
@@ -139,9 +142,17 @@ export default function AppointmentForm({
   return (
     <FadeIn>
       <div className="space-y-6">
-        <div className="flex items-center">
-          <BackButton className="mr-2" />
-          <h2 className="text-2xl font-bold">Book New Appointment</h2>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center">
+            <BackButton className="mr-2" />
+            <h2 className="text-2xl font-bold">Book New Appointment</h2>
+          </div>
+          {(isLoadingPatients || isLoadingDoctors) && (
+            <div className="flex items-center text-sm text-muted-foreground">
+              <Loader2 className="h-4 w-4 animate-spin mr-2" />
+              Loading data...
+            </div>
+          )}
         </div>
         
         <Form {...form}>
@@ -194,10 +205,15 @@ export default function AppointmentForm({
             
             <Button 
               type="submit" 
-              disabled={isSubmitting} 
+              disabled={isSubmitting || isLoadingPatients || isLoadingDoctors} 
               className="w-full"
             >
-              {isSubmitting ? "Booking..." : "Book Appointment"}
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Booking...
+                </>
+              ) : "Book Appointment"}
             </Button>
           </form>
         </Form>

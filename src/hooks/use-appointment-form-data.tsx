@@ -6,6 +6,20 @@ import { useToast } from '@/hooks/use-toast';
 import { Patient, Doctor } from '@/lib/types';
 import { getAvailableTimeSlots } from '@/lib/appointment-service';
 
+// Global cache to avoid redundant API calls across component instances
+const globalCache = {
+  patients: {
+    data: null as Patient[] | null,
+    timestamp: 0,
+    expiryTime: 60000 // 1 minute
+  },
+  doctors: {
+    data: null as Doctor[] | null,
+    timestamp: 0,
+    expiryTime: 60000 // 1 minute
+  }
+};
+
 export function useAppointmentFormData() {
   const { toast } = useToast();
   const [patients, setPatients] = useState<Patient[]>([]);
@@ -21,17 +35,36 @@ export function useAppointmentFormData() {
     [isLoadingPatients, isLoadingDoctors]
   );
   
-  // Fetch patients - separated for better error handling
+  // Fetch patients with caching
   useEffect(() => {
     const fetchPatients = async () => {
       setIsLoadingPatients(true);
+      
+      // Check cache first
+      const now = Date.now();
+      if (globalCache.patients.data && 
+          (now - globalCache.patients.timestamp < globalCache.patients.expiryTime)) {
+        console.log('Using cached patients data');
+        setPatients(globalCache.patients.data);
+        setIsLoadingPatients(false);
+        return;
+      }
+      
       try {
+        console.log('Fetching patients from API');
         const { data, error } = await supabase
           .from('patients')
           .select('*')
           .order('name');
         
         if (error) throw error;
+        
+        if (!data || data.length === 0) {
+          console.log('No patients found in database');
+          setPatients([]);
+          setIsLoadingPatients(false);
+          return;
+        }
         
         // Transform from DB format to our Patient type
         const transformedPatients: Patient[] = data.map(patient => ({
@@ -55,7 +88,12 @@ export function useAppointmentFormData() {
             : []
         }));
         
+        // Update cache
+        globalCache.patients.data = transformedPatients;
+        globalCache.patients.timestamp = now;
+        
         setPatients(transformedPatients);
+        console.log(`Loaded ${transformedPatients.length} patients`);
       } catch (error) {
         console.error('Error fetching patients:', error);
         toast({
@@ -63,6 +101,7 @@ export function useAppointmentFormData() {
           description: error instanceof Error ? error.message : 'Failed to load patients',
           variant: 'destructive',
         });
+        setPatients([]);
       } finally {
         setIsLoadingPatients(false);
       }
@@ -71,17 +110,36 @@ export function useAppointmentFormData() {
     fetchPatients();
   }, [toast]);
   
-  // Fetch doctors - separated for better error handling
+  // Fetch doctors with caching
   useEffect(() => {
     const fetchDoctors = async () => {
       setIsLoadingDoctors(true);
+      
+      // Check cache first
+      const now = Date.now();
+      if (globalCache.doctors.data && 
+          (now - globalCache.doctors.timestamp < globalCache.doctors.expiryTime)) {
+        console.log('Using cached doctors data');
+        setDoctors(globalCache.doctors.data);
+        setIsLoadingDoctors(false);
+        return;
+      }
+      
       try {
+        console.log('Fetching doctors from API');
         const { data, error } = await supabase
           .from('doctors')
           .select('*')
           .order('name');
         
         if (error) throw error;
+        
+        if (!data || data.length === 0) {
+          console.log('No doctors found in database');
+          setDoctors([]);
+          setIsLoadingDoctors(false);
+          return;
+        }
         
         // Transform from DB format to our Doctor type
         const transformedDoctors: Doctor[] = data.map(doctor => ({
@@ -102,7 +160,12 @@ export function useAppointmentFormData() {
           about: doctor.about || ''
         }));
         
+        // Update cache
+        globalCache.doctors.data = transformedDoctors;
+        globalCache.doctors.timestamp = now;
+        
         setDoctors(transformedDoctors);
+        console.log(`Loaded ${transformedDoctors.length} doctors`);
       } catch (error) {
         console.error('Error fetching doctors:', error);
         toast({
@@ -110,6 +173,7 @@ export function useAppointmentFormData() {
           description: error instanceof Error ? error.message : 'Failed to load doctors',
           variant: 'destructive',
         });
+        setDoctors([]);
       } finally {
         setIsLoadingDoctors(false);
       }
