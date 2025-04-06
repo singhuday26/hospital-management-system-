@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Plus, Search, ArrowLeft } from 'lucide-react';
+import { Plus, Search } from 'lucide-react';
 import { doctors } from '@/lib/data';
 import DoctorCard from '@/components/dashboard/DoctorCard';
 import FadeIn from '@/components/animations/FadeIn';

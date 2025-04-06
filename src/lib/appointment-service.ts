@@ -46,8 +46,8 @@ export const bookAppointment = async (data: AppointmentFormData): Promise<{
       doctorName: newAppointment.doctors?.name || '',
       date: newAppointment.date,
       time: newAppointment.time,
-      type: newAppointment.type,
-      status: newAppointment.status,
+      type: newAppointment.type as 'Checkup' | 'Consultation' | 'Surgery' | 'Follow-up',
+      status: newAppointment.status as 'scheduled' | 'confirmed' | 'cancelled' | 'completed',
       notes: newAppointment.notes
     };
 

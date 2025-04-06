@@ -36,6 +36,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Patient, Doctor } from '@/lib/types';
 import { AppointmentFormData, bookAppointment, getAvailableTimeSlots } from '@/lib/appointment-service';
 import FadeIn from '@/components/animations/FadeIn';
+import { BackButton } from '@/components/ui/back-button';
 
 const formSchema = z.object({
   patientId: z.string({
@@ -106,7 +107,26 @@ export default function AppointmentForm({
         return;
       }
       
-      setPatients(data);
+      // Transform from DB format to our Patient type
+      const transformedPatients: Patient[] = data.map(patient => ({
+        id: patient.id,
+        name: patient.name,
+        patientId: patient.id, // Use the same ID for both fields
+        gender: patient.gender as 'male' | 'female' | 'other',
+        age: patient.age || 0,
+        phone: patient.phone || '',
+        email: patient.email || '',
+        address: patient.address || '',
+        status: patient.status as 'active' | 'inactive' | 'pending',
+        lastVisit: patient.last_visit || '',
+        medicalHistory: patient.medical_history 
+          ? (Array.isArray(patient.medical_history) 
+              ? patient.medical_history 
+              : []) 
+          : []
+      }));
+      
+      setPatients(transformedPatients);
     };
     
     const fetchDoctors = async () => {
@@ -125,7 +145,26 @@ export default function AppointmentForm({
         return;
       }
       
-      setDoctors(data);
+      // Transform from DB format to our Doctor type
+      const transformedDoctors: Doctor[] = data.map(doctor => ({
+        id: doctor.id,
+        name: doctor.name,
+        specialty: doctor.specialty,
+        image: doctor.image_url,
+        experience: doctor.experience || 0,
+        phone: doctor.phone || '',
+        email: doctor.email || '',
+        availableDays: doctor.available_days || ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
+        availableTime: {
+          start: doctor.available_time_start || '09:00:00',
+          end: doctor.available_time_end || '17:00:00'
+        },
+        rating: doctor.rating || 4.5,
+        patientsCount: doctor.patients_count || 0,
+        about: doctor.about || ''
+      }));
+      
+      setDoctors(transformedDoctors);
     };
     
     fetchPatients();
@@ -153,8 +192,12 @@ export default function AppointmentForm({
     try {
       // Format the data
       const appointmentData: AppointmentFormData = {
-        ...data,
+        patientId: data.patientId,
+        doctorId: data.doctorId,
         date: format(data.date, 'yyyy-MM-dd'),
+        time: data.time,
+        type: data.type,
+        notes: data.notes
       };
       
       const result = await bookAppointment(appointmentData);
@@ -177,22 +220,12 @@ export default function AppointmentForm({
       setIsLoading(false);
     }
   };
-
-  const handleBackClick = () => {
-    navigate(-1);
-  };
   
   return (
     <FadeIn>
       <div className="space-y-6">
         <div className="flex items-center">
-          <Button
-            variant="ghost"
-            onClick={handleBackClick}
-            className="mr-2 p-0 h-8 w-8"
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
+          <BackButton className="mr-2" />
           <h2 className="text-2xl font-bold">Book New Appointment</h2>
         </div>
         
