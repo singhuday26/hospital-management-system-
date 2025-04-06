@@ -5,6 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Patient, Doctor } from '@/lib/types';
 import { getAvailableTimeSlots } from '@/lib/appointment-service';
+import { Json } from '@/integrations/supabase/types';
 
 export function useAppointmentFormData() {
   const { toast } = useToast();
@@ -44,7 +45,7 @@ export function useAppointmentFormData() {
         lastVisit: patient.last_visit || '',
         medicalHistory: patient.medical_history 
           ? (Array.isArray(patient.medical_history) 
-              ? patient.medical_history.map(item => ({
+              ? patient.medical_history.map((item: any) => ({
                   condition: item.condition || '',
                   diagnosedDate: item.diagnosedDate || ''
                 }))

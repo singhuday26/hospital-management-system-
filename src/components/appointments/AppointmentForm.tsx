@@ -78,6 +78,8 @@ export default function AppointmentForm({
   const selectedDate = form.watch('date');
   
   // Fetch available time slots when doctor and date are selected
+  import React from 'react';
+  
   React.useEffect(() => {
     if (selectedDoctor && selectedDate) {
       fetchTimeSlots(selectedDoctor, selectedDate);
