@@ -3,6 +3,11 @@ import { createRoot } from 'react-dom/client'
 import App from './App.tsx'
 import './index.css'
 
+// Add performance timing marks
+if (import.meta.env.DEV) {
+  performance.mark('app-start');
+}
+
 // Simple error boundary for the entire app
 const renderApp = () => {
   try {
@@ -26,8 +31,25 @@ const renderApp = () => {
       });
     }
     
+    // Render with performance tracking
+    if (import.meta.env.DEV) {
+      performance.mark('before-render');
+    }
+    
     root.render(<App />);
-    console.log("App rendered successfully");
+    
+    if (import.meta.env.DEV) {
+      performance.mark('after-render');
+      performance.measure('render-time', 'before-render', 'after-render');
+      console.log("App rendered successfully");
+      
+      // Output performance metrics
+      performance.measure('total-startup-time', 'app-start', 'after-render');
+      const measures = performance.getEntriesByType('measure');
+      measures.forEach(measure => {
+        console.log(`${measure.name}: ${measure.duration.toFixed(2)}ms`);
+      });
+    }
   } catch (error) {
     console.error("Failed to render app:", error);
     // Display a fallback error message in the DOM
@@ -44,9 +66,18 @@ const renderApp = () => {
   }
 };
 
-// Execute app rendering
+// Use a better technique to detect when DOM is ready
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', renderApp);
 } else {
+  // DOM already ready, render immediately
   renderApp();
+}
+
+// Preload critical components
+if ('requestIdleCallback' in window) {
+  requestIdleCallback(() => {
+    import('./components/layout/Navbar');
+    import('./components/layout/Footer');
+  });
 }

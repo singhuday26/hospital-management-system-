@@ -1,6 +1,6 @@
 
 import { useSearchParams } from 'react-router-dom';
-import { Suspense, lazy } from 'react';
+import { Suspense, lazy, useState, useEffect } from 'react';
 import { Loader2 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -11,12 +11,35 @@ export default function BookAppointment() {
   const [searchParams] = useSearchParams();
   const patientId = searchParams.get('patientId') || undefined;
   const doctorId = searchParams.get('doctorId') || undefined;
+  const [isLoading, setIsLoading] = useState(true);
+  
+  // Simulate preloading data
+  useEffect(() => {
+    // Preload component
+    const preload = async () => {
+      try {
+        // Prefetch the component
+        await import('@/components/appointments/AppointmentForm');
+        // Add a small delay to ensure component mounts smoothly
+        setTimeout(() => setIsLoading(false), 100);
+      } catch (error) {
+        console.error('Error preloading appointment form:', error);
+        setIsLoading(false);
+      }
+    };
+    
+    preload();
+  }, []);
   
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-6 pt-24">
-      <Suspense fallback={<LoadingBookingForm />}>
-        <LazyAppointmentForm initialPatientId={patientId} initialDoctorId={doctorId} />
-      </Suspense>
+      {isLoading ? (
+        <LoadingBookingForm />
+      ) : (
+        <Suspense fallback={<LoadingBookingForm />}>
+          <LazyAppointmentForm initialPatientId={patientId} initialDoctorId={doctorId} />
+        </Suspense>
+      )}
     </div>
   );
 }
